@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.acktos.easylaundry.OrderActivity">
+
+    <item android:id="@+id/finish"
+        android:title="FINISH"
+        android:orderInCategory="100" app:showAsAction="always" />
+</menu>

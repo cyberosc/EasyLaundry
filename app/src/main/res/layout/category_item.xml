@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+
+    <ImageView
+        android:id="@+id/category_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="4dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/circle_dress" />
+
+    <TextView
+        android:id="@+id/clothing_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?android:textAppearanceMedium"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="12dp"
+        android:layout_toRightOf="@id/category_image"/>
+
+    <TextView
+        android:id="@+id/clothing_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?android:textAppearanceMedium"
+        android:textStyle="bold"
+        android:textSize="22dp"
+        android:layout_marginLeft="12dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"/>
+
+
+</RelativeLayout>

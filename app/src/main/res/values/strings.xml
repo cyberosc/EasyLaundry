@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">EasyLaundry</string>
+
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="loading">Loading…</string>
+    <string name="sign_in">Sing in</string>
+    <string name="register">Register</string>
+
+    <string name="title_activity_access">AccessActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_register">New Account</string>
+
+    <string name="prompt_phone">Phone</string>
+    <string name="prompt_name">Name</string>
+    <string name="create_new_account">Create</string>
+    <string name="title_activity_categories">Categories</string>
+    <string name="title_activity_sub_category">Select your garment</string>
+
+    <string name="basket">your basket</string>
+
+    <string-array name="qty">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+    <string name="title_activity_order">Order</string>
+    <string name="title_activity_finish">Thanks for you order</string>
+    <string name="title_activity_order_status">Order Status</string>
+
+
+</resources>
