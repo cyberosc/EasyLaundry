@@ -1,17 +1,26 @@
 package com.acktos.easylaundry;
 
+import com.acktos.easylaundry.controllers.CategoriesController;
+import com.acktos.easylaundry.models.Category;
+import com.acktos.easylaundry.services.SyncDataService;
 import com.acktos.easylaundry.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.ArrayList;
 
 
 /**
@@ -71,6 +80,8 @@ public class SplashScreenActivity extends Activity {
         mEditor.putInt(SHARED_CLOTHING_PRICE, 0);
 
         mEditor.commit();
+
+        (new CheckDataTask()).execute();
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
@@ -136,7 +147,7 @@ public class SplashScreenActivity extends Activity {
 
 
         final Intent mIntent=new Intent(this,AccessActivity.class);
-        new Handler().postDelayed(new Runnable() {
+        /*new Handler().postDelayed(new Runnable() {
 
             @Override
             public void run() {
@@ -144,7 +155,7 @@ public class SplashScreenActivity extends Activity {
                 startActivity(mIntent);
                 finish();
             }
-        }, AUTO_HIDE_DELAY_MILLIS);
+        }, AUTO_HIDE_DELAY_MILLIS);*/
     }
 
     @Override
@@ -188,5 +199,40 @@ public class SplashScreenActivity extends Activity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+
+    private class CheckDataTask extends AsyncTask<Void,Void,Boolean>{
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            boolean downloadData=false;
+
+            CategoriesController categoriesController=new CategoriesController(SplashScreenActivity.this);
+            Cursor cursorCategories=categoriesController.getAllCategoriesFromDB();
+
+            if(cursorCategories!=null){
+                if(cursorCategories.getCount()<1){
+
+                    Log.i("debug checkdatatask:", "categories is  empty");
+                    Intent intent=new Intent(SplashScreenActivity.this,SyncDataService.class);
+                    startService(intent);
+
+                }else{
+                    Log.i("debug checkdatatask:", "categories is NOT empty");
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+
+            super.onPostExecute(result);
+            Intent intent=new Intent(SplashScreenActivity.this,AccessActivity.class);
+            startActivity(intent);
+        }
     }
 }

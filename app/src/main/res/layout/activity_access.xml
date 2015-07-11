@@ -35,4 +35,6 @@
         android:text="@string/register"
         android:onClick="launchRegister" />
 
+
+
 </RelativeLayout>

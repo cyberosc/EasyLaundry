@@ -17,7 +17,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.acktos.easylaundry.LaundryContract;
 import com.acktos.easylaundry.R;
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by OSCAR ACKTOS on 14/04/2015.
@@ -28,10 +30,10 @@ public class QtySelectDialog extends DialogFragment {
     private TextView qtyView;
     private ImageButton arrowUp;
     private ImageButton arrowDown;
-    private ImageView clothingImage;
+    private ImageView clothingImageView;
 
     private String clothingId;
-    private String clothingResource;
+    private String clothingThumbnail;
 
     private QuantityChangeListener qtyChangelistener;
     public static final String SHARED_PREFERENCES ="com.acktos.SHARED_PREFERENCES";
@@ -42,14 +44,14 @@ public class QtySelectDialog extends DialogFragment {
     public static SharedPreferences mPrefs;// Handle to SharedPreferences for this APP
     public static SharedPreferences.Editor mEditor;// Handle to a SharedPreferences editor
 
-    public static QtySelectDialog newInstance(String clothingId,int clothingResource) {
+    public static QtySelectDialog newInstance(String clothingId,String clothingThumbnail) {
 
         QtySelectDialog qtySelectDialog = new QtySelectDialog();
 
         // Supply index input as an argument.
         Bundle args = new Bundle();
         args.putString("clothing_id", clothingId);
-        args.putInt("clothing_resource", clothingResource);
+        args.putString("clothing_thumbnail", clothingThumbnail);
 
         qtySelectDialog.setArguments(args);
 
@@ -70,7 +72,7 @@ public class QtySelectDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle SaveInstanceState){
 
         clothingId=getArguments().getString("clothing_id");
-        clothingResource=getArguments().getString("clothing_resource");
+        clothingThumbnail=getArguments().getString("clothing_thumbnail");
 
 
         LayoutInflater inflater=getActivity().getLayoutInflater();
@@ -79,7 +81,12 @@ public class QtySelectDialog extends DialogFragment {
         qtyView=(TextView)rootView.findViewById(R.id.qty_select_items);
         arrowDown=(ImageButton)rootView.findViewById(R.id.btn_down_qty);
         arrowUp=(ImageButton)rootView.findViewById(R.id.btn_up_qty);
-        clothingImage=(ImageView)rootView.findViewById(R.id.qty_select_image);
+        clothingImageView=(ImageView)rootView.findViewById(R.id.qty_select_image);
+
+
+        Picasso.with(getActivity())
+                .load(clothingThumbnail)
+                .into(clothingImageView);
 
         arrowUp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -112,7 +119,7 @@ public class QtySelectDialog extends DialogFragment {
         builder.setView(rootView);
         builder.setPositiveButton("Add to basket", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                qtyChangelistener.onQuantityChange(Integer.parseInt(qtyView.getText().toString()));
+                qtyChangelistener.onQuantityChange(clothingId);
             }
         });
 
@@ -131,6 +138,6 @@ public class QtySelectDialog extends DialogFragment {
 
     // interface to communicate with host Activity
     public interface QuantityChangeListener{
-        void onQuantityChange(int qtyItems);
+        void onQuantityChange(String clothingId);
     }
 }

@@ -1,4 +1,4 @@
-package com.acktos.easylaundry;
+package com.acktos.easylaundry.services;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -10,6 +10,9 @@ import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.acktos.easylaundry.GcmBroadcastReceiver;
+import com.acktos.easylaundry.OrderStatusActivity;
+import com.acktos.easylaundry.R;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 /**
@@ -33,7 +36,7 @@ public class GcmIntentService extends IntentService {
         // in your BroadcastReceiver.
         String messageType = gcm.getMessageType(intent);
 
-        if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+        if (!extras.isEmpty()) {  // has effect of un-parcelling Bundle
             /*
              * Filter messages based on message type. Since it is likely that GCM
              * will be extended in the future with new message types, just ignore

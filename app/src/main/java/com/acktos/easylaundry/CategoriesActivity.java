@@ -1,33 +1,39 @@
 package com.acktos.easylaundry;
 
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.acktos.easylaundry.controllers.UsersController;
+import com.acktos.easylaundry.models.Clothing;
+import com.acktos.easylaundry.providers.EasyLaundryProvider;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 
-public class CategoriesActivity extends ActionBarActivity {
+public class CategoriesActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
 
     public static final String SHARED_PREFERENCES ="com.acktos.SHARED_PREFERENCES";
@@ -36,7 +42,7 @@ public class CategoriesActivity extends ActionBarActivity {
     public static final String PROPERTY_REG_ID = "easylaundry_registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    public static final String SENDER_ID = "316092606429 ";
+    public static final String SENDER_ID = "316092606429";
 
     /**
      * Tag used on log messages.
@@ -44,20 +50,23 @@ public class CategoriesActivity extends ActionBarActivity {
     static final String TAG = "EasyLaundryDebug";
 
 
-    TextView mDisplay;
+    //COMPONENTS
     GoogleCloudMessaging gcm;
-
-    Context context;
-
-    String regid;
+    private DefaultCursorAdapter categoryAdapter;
 
     //ANDROID UTILS
     SharedPreferences mPrefs;// Handle to SharedPreferences for this APP
     SharedPreferences.Editor mEditor;// Handle to a SharedPreferences editor
 
+    //UI REFERENCES
+    TextView mDisplay;
     ActionBar actionBar;
     TextView qtyClothes;
+
+    //ATTRIBUTES
     int items=0;
+    Context context;
+    String regid;
 
     private ListView categoriesList;
     @Override
@@ -72,37 +81,30 @@ public class CategoriesActivity extends ActionBarActivity {
         mPrefs = getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE);// Open Shared Preferences
         mEditor = mPrefs.edit();// Get an editor
 
-        ArrayList<Clothing> clothings=new ArrayList<Clothing>();
 
-        clothings.add(new Clothing(R.drawable.circle_suit,"SUITS","0"));
-        clothings.add(new Clothing(R.drawable.circle_dress,"DRESSES","0"));
-        clothings.add(new Clothing(R.drawable.circle_jacket,"JACKETS","0"));
-        clothings.add(new Clothing(R.drawable.circle_towelling,"TOWELLING","0"));
-        clothings.add(new Clothing(R.drawable.circle_shirt,"SHIRTS","0"));
-        clothings.add(new Clothing(R.drawable.circle_pants,"PANTS","0"));
-        clothings.add(new Clothing(R.drawable.circle_knitwear,"KNITWEAR","0"));
-        clothings.add(new Clothing(R.drawable.circle_tablecloth,"TABLECLOTH","0"));
-
-
-        CategoryAdapter categoryAdapter = new CategoryAdapter(this, clothings);
+        categoryAdapter = new DefaultCursorAdapter(this,null,0);
         categoriesList.setAdapter(categoryAdapter);
+
 
         //set click handler to categories list
         categoriesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Object item=parent.getItemAtPosition(position);
-                Clothing card=(Clothing)item;
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                String categoryId= cursor.getString(cursor.getColumnIndex(LaundryContract.CategoriesTable._ID));
+                Log.i("Select clothing name:", categoryId);
 
-                //Toast.makeText(CardListActivity.this, getString(R.string.set_payment_success),Toast.LENGTH_SHORT).show();
 
-                Intent i=new Intent(CategoriesActivity.this,SubCategoryActivity.class);
+                Intent i = new Intent(CategoriesActivity.this, ClothesActivity.class);
+                i.putExtra(Clothing.KEY_CATEGORY_ID,categoryId);
                 startActivity(i);
 
             }
         });
+
+        getLoaderManager().initLoader(0, null, this);
 
         context = getApplicationContext();
 
@@ -115,32 +117,39 @@ public class CategoriesActivity extends ActionBarActivity {
             if (regid.isEmpty()) {
                 registerInBackground();
             }
+
+
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.menu_categories, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_categories, menu);
 
-        final View shoppingcart = menu.findItem(R.id.action_basket).getActionView();
-        qtyClothes = (TextView) shoppingcart.findViewById(R.id.qty_clothes);
 
-        qtyClothes.setText(String.valueOf(items));
-        qtyClothes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(CategoriesActivity.this, OrderActivity.class);
-                startActivity(i);
-            }
-        });
+        MenuItem menuItem=menu.findItem(R.id.action_basket);
+        MenuItemCompat.setActionView(menuItem,R.layout.shoppingcar_icon);
 
-        return true;
+
+        final View shoppingcar = menu.findItem(R.id.action_basket).getActionView();
+
+            qtyClothes = (TextView) shoppingcar.findViewById(R.id.qty_clothes);
+
+            qtyClothes.setText(String.valueOf(items));
+            qtyClothes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(CategoriesActivity.this, OrderActivity.class);
+                    startActivity(i);
+                }
+            });
+
+        return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -156,6 +165,7 @@ public class CategoriesActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     protected void onResume() {
         super.onPostResume();
@@ -168,7 +178,6 @@ public class CategoriesActivity extends ActionBarActivity {
         items= mPrefs.getInt(SHARED_CLOTHING_QTY, 0);
         invalidateOptionsMenu();
     }
-
 
     /**
      * Check the device to make sure it has the Google Play Services APK. If
@@ -199,9 +208,6 @@ public class CategoriesActivity extends ActionBarActivity {
         final SharedPreferences prefs = getGCMPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
 
-        //SharedPreferences.Editor editor = prefs.edit();
-        //editor.putString(PROPERTY_REG_ID, "");
-        //editor.commit();
 
         if (registrationId.isEmpty()) {
             Log.i(TAG, "Registration not found.");
@@ -209,9 +215,8 @@ public class CategoriesActivity extends ActionBarActivity {
         }else{
             Log.i(TAG,"Registration id:"+registrationId);
         }
-        // Check if app was updated; if so, it must clear the registration ID
-        // since the existing registration ID is not guaranteed to work with
-        // the new app version.
+
+
         int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = getAppVersion(context);
         if (registeredVersion != currentVersion) {
@@ -243,7 +248,6 @@ public class CategoriesActivity extends ActionBarActivity {
         return getSharedPreferences(CategoriesActivity.class.getSimpleName(),Context.MODE_PRIVATE);
     }
 
-
     /**
      * Registers the application with GCM servers asynchronously.
      * <p>
@@ -263,19 +267,15 @@ public class CategoriesActivity extends ActionBarActivity {
                     regid = gcm.register(SENDER_ID);
                     msg = "Device registered, registration ID=" + regid;
 
-                    // You should send the registration ID to your server over HTTP,
-                    // so it can use GCM/HTTP or CCS to send messages to your app.
-                    // The request to your server should be authenticated if your app
-                    // is using accounts.
-                    sendRegistrationIdToBackend();
 
-                    // For this demo: we don't need to send it because the device
-                    // will send upstream messages to a server that echo back the
-                    // message using the 'from' address in the message.
+                    sendRegistrationIdToBackend(regid);
+
+
 
                     // Persist the registration ID - no need to register again.
                     storeRegistrationId(context, regid);
                 } catch (IOException ex) {
+                    ex.printStackTrace();
                     msg = "Error :" + ex.getMessage();
                     // If there is an error, don't just keep trying to register.
                     // Require the user to click a button again, or perform
@@ -300,8 +300,11 @@ public class CategoriesActivity extends ActionBarActivity {
      * device sends upstream messages to a server that echoes back the message
      * using the 'from' address in the message.
      */
-    private void sendRegistrationIdToBackend() {
-        // Your implementation here.
+    private void sendRegistrationIdToBackend(String regid) {
+
+        UsersController usersController=new UsersController();
+        usersController.saveRegisterId(regid);
+
     }
 
     /**
@@ -321,5 +324,20 @@ public class CategoriesActivity extends ActionBarActivity {
         editor.commit();
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
+        return new CursorLoader(this, EasyLaundryProvider.URI_CATEGORIES, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        categoryAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        categoryAdapter.swapCursor(null);
+    }
 }

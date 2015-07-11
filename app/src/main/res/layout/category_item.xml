@@ -13,24 +13,25 @@
         android:src="@drawable/circle_dress" />
 
     <TextView
-        android:id="@+id/clothing_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="?android:textAppearanceMedium"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="12dp"
-        android:layout_toRightOf="@id/category_image"/>
-
-    <TextView
-        android:id="@+id/clothing_price"
+        android:id="@+id/category_title"
+        android:text="@string/abc_action_bar_home_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="?android:textAppearanceMedium"
         android:textStyle="bold"
-        android:textSize="22dp"
         android:layout_marginLeft="12dp"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_toRightOf="@id/category_image"/>
 
+    <TextView
+        android:id="@+id/category_subtitle"
+        android:text="@string/accept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?android:textAppearanceSmall"
+        android:layout_below="@id/category_title"
+        android:layout_toRightOf="@id/category_image"
+        android:layout_toEndOf="@id/category_image"
+        android:layout_alignLeft="@id/category_title"
+        android:layout_alignStart="@id/category_title"/>
 
 </RelativeLayout>

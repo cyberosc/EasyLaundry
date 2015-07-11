@@ -42,7 +42,7 @@ public class SignActivity extends ActionBarActivity implements LoaderCallbacks<C
      * TODO: remove after connecting to a real authentication system.
      */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "oscar@gmail.com:qazwsx", "q:q"
+            "test@gmail.com:123456", "q:q"
     };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
